@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090b">
+  <meta name="description" content="Amey Chopde's certificates, credentials, and continuous learning.">
+  <title>Certificates — Amey Chopde</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root { --archive-red: #ff304f; --archive-line: rgba(255,255,255,.13); }
+    .cert-page { min-height:100vh; position:relative; overflow:hidden; }
+    .cert-page::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:.12;
+      background-image:linear-gradient(rgba(255,48,79,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,48,79,.09) 1px,transparent 1px);
+      background-size:48px 48px; mask-image:linear-gradient(to bottom,black,transparent 75%); }
+    .cert-main { position:relative; z-index:1; padding-top:76px; padding-bottom:100px; }
+    .eyebrow,.cert-toolbar,.cert-meta,.cert-open-hint,.cert-status,.viewer-toolbar,.viewer-btn { font-family:"DM Mono",monospace; }
+    .eyebrow { color:var(--archive-red); font-size:11px; letter-spacing:.08em; }
+    .cert-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:32px; margin-bottom:42px; }
+    .cert-heading h1 { font-size:clamp(2.7rem,7vw,5.5rem); line-height:1.02; letter-spacing:-.075em; margin:20px 0; }
+    .cert-heading h1 em { color:var(--archive-red); font-style:normal; }
+    .cert-intro { max-width:540px; line-height:1.8; opacity:.72; }
+    .cert-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px 0; margin-bottom:30px; border-top:1px solid var(--archive-line); border-bottom:1px solid var(--archive-line); font-size:11px; }
+    .cert-status { color:var(--archive-red); }
+    .cert-count { opacity:.65; }
+    .cert-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:34px 24px; }
+    .cert-card { position:relative; min-width:0; cursor:pointer; text-align:left; padding:0; border:0; color:inherit; background:transparent; font:inherit; opacity:0; animation:certAppear .65s ease forwards; }
+    .cert-card:nth-child(2){animation-delay:.07s}.cert-card:nth-child(3){animation-delay:.14s}.cert-card:nth-child(4){animation-delay:.21s}.cert-card:nth-child(5){animation-delay:.28s}.cert-card:nth-child(6){animation-delay:.35s}
+    .cert-stack { position:relative; padding:12px 12px 0 0; margin-bottom:20px; transition:transform .35s ease; }
+    .cert-stack::before,.cert-stack::after { content:""; position:absolute; inset:0 12px 12px 12px; border:1px solid rgba(255,48,79,.22); background:#111114; transition:transform .35s ease; }
+    .cert-stack::before { transform:translate(8px,-8px) rotate(2deg); }
+    .cert-stack::after { transform:translate(4px,-4px) rotate(1deg); }
+    .cert-preview { position:relative; z-index:1; aspect-ratio:1.414/1; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#111114; border:1px solid rgba(255,48,79,.35); }
+    .cert-preview img { display:block; width:100%; height:100%; object-fit:contain; background:#111114; transition:transform .45s ease,filter .45s ease; }
+    .cert-preview-placeholder { padding:24px; text-align:center; font:11px/1.8 "DM Mono",monospace; color:var(--archive-red); }
+    .cert-preview-placeholder strong { display:block; font-size:30px; margin-bottom:12px; }
+    .cert-card:hover .cert-stack { transform:translateY(-6px); }
+    .cert-card:hover .cert-stack::before { transform:translate(12px,-12px) rotate(4deg); }
+    .cert-card:hover .cert-stack::after { transform:translate(6px,-6px) rotate(2deg); }
+    .cert-card:hover .cert-preview img { transform:scale(1.035); }
+    .cert-card:focus-visible { outline:2px solid var(--archive-red); outline-offset:8px; }
+    .cert-meta { display:flex; justify-content:space-between; gap:12px; align-items:center; font-size:10px; opacity:.6; margin-bottom:9px; }
+    .cert-title { font-size:16px; line-height:1.5; font-weight:700; overflow-wrap:anywhere; }
+    .cert-open-hint { margin-top:9px; font-size:10px; color:var(--archive-red); opacity:.8; }
+    .cert-empty { grid-column:1/-1; padding:55px 24px; text-align:center; border:1px dashed rgba(255,48,79,.3); background:rgba(255,48,79,.025); }
+    .cert-empty strong { display:block; font:12px "DM Mono",monospace; color:var(--archive-red); margin-bottom:14px; }
+    .cert-empty p { max-width:500px; margin:0 auto; line-height:1.8; opacity:.65; }
+    .cert-viewer { position:fixed; inset:0; z-index:1000; display:none; align-items:center; justify-content:center; padding:24px; background:rgba(3,3,5,.95); backdrop-filter:blur(14px); }
+    .cert-viewer.is-open { display:flex; animation:viewerFade .25s ease; }
+    .viewer-inner { width:min(100%,1100px); max-height:94vh; display:flex; flex-direction:column; gap:14px; }
+    .viewer-toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; color:var(--archive-red); font-size:11px; }
+    .viewer-controls { display:flex; gap:8px; flex-wrap:wrap; }
+    .viewer-btn { border:1px solid rgba(255,48,79,.4); background:#0c0c10; color:#f2f2f4; padding:10px 13px; cursor:pointer; }
+    .viewer-btn:hover { border-color:var(--archive-red); color:var(--archive-red); }
+    .viewer-stage { position:relative; height:min(76vh,850px); min-height:200px; display:flex; align-items:center; justify-content:center; perspective:1800px; }
+    .viewer-frame { width:100%; height:100%; border:1px solid rgba(255,255,255,.12); background:#111; box-shadow:0 20px 80px rgba(0,0,0,.45); transform-origin:left center; }
+    .viewer-frame.turn-next { animation:pageTurnNext .4s ease; }.viewer-frame.turn-prev { animation:pageTurnPrev .4s ease; }
+    .viewer-caption { text-align:center; color:#e8e8ed; font-size:13px; }
+    body.viewer-active { overflow:hidden; }
+    .archive-footer-note { margin-top:42px; font:10px "DM Mono",monospace; opacity:.55; }
+    @keyframes certAppear { from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)} }
+    @keyframes viewerFade { from{opacity:0}to{opacity:1} }
+    @keyframes pageTurnNext { 0%{opacity:1;transform:rotateY(0)}45%{opacity:.25;transform:rotateY(-65deg)}100%{opacity:1;transform:rotateY(0)} }
+    @keyframes pageTurnPrev { 0%{opacity:1;transform:rotateY(0)}45%{opacity:.25;transform:rotateY(65deg)}100%{opacity:1;transform:rotateY(0)} }
+    @media(max-width:850px){.cert-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cert-heading{align-items:flex-start;flex-direction:column}}
+    @media(max-width:520px){.cert-main{padding-top:48px}.cert-grid{grid-template-columns:1fr;gap:32px}.cert-stack{max-width:440px}.viewer-toolbar{align-items:flex-start;flex-direction:column}.cert-viewer{padding:14px}.viewer-stage{height:68vh}}
+    @media(prefers-reduced-motion:reduce){.cert-card{opacity:1;animation:none}.cert-stack,.cert-stack::before,.cert-stack::after,.cert-preview img,.cert-viewer.is-open,.viewer-frame.turn-next,.viewer-frame.turn-prev{transition:none;animation:none}}
+  </style>
+</head>
+<body>
+<div class="cert-page" id="top">
+  <header class="nav wrap">
+    <a class="brand" href="index.html"><b>A.</b> AMEY CHOPDE</a>
+    <button id="menuToggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navLinks">☰</button>
+    <nav id="navLinks" aria-label="Main navigation">
+      <a href="index.html#about">About</a><a href="index.html#experience">Experience</a><a href="index.html#projects">Projects</a>
+      <a href="certificates.html" aria-current="page">Certificates</a><a href="index.html#skills">Skills</a><a href="index.html#contact">Contact ↗</a>
+    </nav>
+  </header>
+
+  <main class="cert-main wrap">
+    <p class="eyebrow">04 / CREDENTIAL ARCHIVE</p>
+    <div class="cert-heading">
+      <div>
+        <h1>Proof of<br><em>progress.</em></h1>
+        <p class="cert-intro">A growing archive of certifications, technical learning, and milestones. Every document represents another step in the process of building useful things.</p>
+      </div>
+    </div>
+    <div class="cert-toolbar">
+      <span class="cert-status" id="certificateStatus">● CONNECTING TO DRIVE...</span>
+      <span class="cert-count" id="certificateCount">LOADING ARCHIVE</span>
+    </div>
+    <section id="certificateGrid" class="cert-grid" aria-label="Certificate archive" aria-live="polite">
+      <div class="cert-empty"><strong>INITIALIZING_ARCHIVE</strong><p>Connecting to the certificate collection.</p></div>
+    </section>
+    <p class="archive-footer-note">ARCHIVE / AMEY CHOPDE / CONTINUOUS LEARNING</p>
+  </main>
+  <footer class="wrap bottom">
+    <a class="brand" href="index.html"><b>A.</b> AMEY CHOPDE</a>
+    <span>Designed to keep evolving. <em>© 2026</em></span>
+    <a href="#top">BACK TO TOP ↑</a>
+  </footer>
+</div>
+
+<div class="cert-viewer" id="certificateViewer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Certificate viewer">
+  <div class="viewer-inner">
+    <div class="viewer-toolbar">
+      <span id="viewerPosition">DOCUMENT 01 / 01</span>
+      <div class="viewer-controls">
+        <button class="viewer-btn" id="previousCertificate" type="button">← PREVIOUS</button>
+        <button class="viewer-btn" id="nextCertificate" type="button">NEXT →</button>
+        <a class="viewer-btn" id="openOriginal" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none">OPEN ORIGINAL ↗</a>
+        <button class="viewer-btn" id="closeViewer" type="button">CLOSE ×</button>
+      </div>
+    </div>
+    <div class="viewer-stage"><iframe class="viewer-frame" id="viewerFrame" title="Certificate preview" allow="autoplay"></iframe></div>
+    <p class="viewer-caption" id="viewerCaption"></p>
+  </div>
+</div>
+
+<script>
+  /*
+    Paste the deployed Google Apps Script web app URL below.
+    The Apps Script file is supplied separately as CertificateGallery.gs.
+  */
+  const CERTIFICATES_API_URL = "PASTE_YOUR_DEPLOYED_APPS_SCRIPT_URL_HERE";
+  const DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1jnNi21Fsp2haCl5szdlItF_afRzlGBGF?usp=sharing";
+  const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+  const grid = document.getElementById("certificateGrid");
+  const status = document.getElementById("certificateStatus");
+  const count = document.getElementById("certificateCount");
+  const viewer = document.getElementById("certificateViewer");
+  const viewerFrame = document.getElementById("viewerFrame");
+  const viewerCaption = document.getElementById("viewerCaption");
+  const viewerPosition = document.getElementById("viewerPosition");
+  const previousButton = document.getElementById("previousCertificate");
+  const nextButton = document.getElementById("nextCertificate");
+  const closeButton = document.getElementById("closeViewer");
+  const openOriginal = document.getElementById("openOriginal");
+  let certificates = [];
+  let currentIndex = 0;
+  let lastFocusedElement = null;
+  let jsonpCounter = 0;
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    }[ch]));
+  }
+
+  function readableDate(value) {
+    if (!value) return "CERTIFICATE";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? "CERTIFICATE"
+      : date.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" }).toUpperCase();
+  }
+
+  function placeholderMarkup(title, index) {
+    const initial = (title.trim()[0] || "C").toUpperCase();
+    return `<div class="cert-preview-placeholder"><strong>${escapeHtml(initial)}${String(index + 1).padStart(2,"0")}</strong><span>CREDENTIAL DOCUMENT<br>SELECT TO PREVIEW</span></div>`;
+  }
+
+  function renderCertificates(items, isRefresh = false) {
+    const previousIds = new Set(certificates.map(item => item.id));
+    certificates = items;
+    count.textContent = `${items.length} DOCUMENT${items.length === 1 ? "" : "S"} / GOOGLE DRIVE`;
+    status.textContent = "● DRIVE CONNECTED";
+    status.title = "Archive synced from Google Drive";
+
+    if (!items.length) {
+      grid.innerHTML = `<div class="cert-empty"><strong>NO_CERTIFICATES_FOUND</strong><p>Add PDF or image certificates to the connected Google Drive folder. The gallery will populate automatically.</p></div>`;
+      return;
+    }
+
+    grid.innerHTML = items.map((cert, index) => {
+      const added = isRefresh && !previousIds.has(cert.id);
+      const preview = cert.thumbnailUrl
+        ? `<img src="${escapeHtml(cert.thumbnailUrl)}" alt="${escapeHtml(cert.name)} preview" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.hidden=false"><div class="cert-preview-placeholder" hidden><strong>${String(index+1).padStart(2,"0")}</strong><span>OPEN TO VIEW<br>DOCUMENT PREVIEW</span></div>`
+        : placeholderMarkup(cert.name, index);
+      return `<button class="cert-card" type="button" data-index="${index}" aria-label="Open ${escapeHtml(cert.name)}">
+        <div class="cert-stack"><div class="cert-preview">${preview}</div></div>
+        <div class="cert-meta"><span>${String(index+1).padStart(2,"0")} / CREDENTIAL</span><span>${escapeHtml(readableDate(cert.updated))}</span></div>
+        <div class="cert-title">${escapeHtml(cert.name)}</div>
+        <div class="cert-open-hint">${added ? "＋ NEWLY ADDED / " : ""}OPEN DOCUMENT ↗</div>
+      </button>`;
+    }).join("");
+
+    grid.querySelectorAll(".cert-card").forEach(card => {
+      card.addEventListener("click", () => openViewer(Number(card.dataset.index)));
+    });
+  }
+
+  function fetchCertificatesJsonp() {
+    return new Promise((resolve, reject) => {
+      if (!CERTIFICATES_API_URL || CERTIFICATES_API_URL.includes("https://script.google.com/macros/s/AKfycbxpQie-4Cw_KnivVCtqdF1cpuCjZmim21sIyph9hAB84QugSZVrA996R39O3YophLIO/exec")) {
+        reject(new Error("SETUP_REQUIRED"));
+        return;
+      }
+      const callbackName = `__certificateGalleryCallback${++jsonpCounter}`;
+      const script = document.createElement("script");
+      const timeout = window.setTimeout(() => finish(new Error("Request timed out")), 20000);
+      function finish(error, data) {
+        clearTimeout(timeout);
+        delete window[callbackName];
+        script.remove();
+        error ? reject(error) : resolve(data);
+      }
+      window[callbackName] = data => finish(null, data);
+      script.onerror = () => finish(new Error("Could not reach Apps Script"));
+      script.src = `${CERTIFICATES_API_URL}${CERTIFICATES_API_URL.includes("?") ? "&" : "?"}callback=${callbackName}&_=${Date.now()}`;
+      document.body.appendChild(script);
+    });
+  }
+
+  async function loadCertificates(isRefresh = false) {
+    if (!isRefresh) status.textContent = "● SYNCING DRIVE...";
+    try {
+      const response = await fetchCertificatesJsonp();
+      if (!response || response.ok !== true || !Array.isArray(response.files)) {
+        throw new Error(response?.error || "Unexpected response from Apps Script");
+      }
+      renderCertificates(response.files, isRefresh);
+    } catch (error) {
+      console.error("Certificate archive:", error);
+      if (certificates.length) {
+        status.textContent = "● LAST SYNC KEPT";
+        return;
+      }
+      status.textContent = error.message === "SETUP_REQUIRED" ? "● SETUP REQUIRED" : "● CONNECTION ERROR";
+      count.textContent = "ARCHIVE NOT SYNCED";
+      const detail = error.message === "SETUP_REQUIRED"
+        ? "The gallery design is ready. Deploy the supplied Google Apps Script, then paste its web app URL into CERTIFICATES_API_URL in this page."
+        : "The gallery could not load the Drive folder. Check that the Apps Script is deployed for public access and that the URL is correct.";
+      grid.innerHTML = `<div class="cert-empty"><strong>ARCHIVE_OFFLINE</strong><p>${escapeHtml(detail)}<br><br><a href="${DRIVE_FOLDER_URL}" target="_blank" rel="noopener noreferrer" style="color:var(--archive-red)">Open the Drive folder as a fallback ↗</a></p></div>`;
+    }
+  }
+
+  function updateViewer(direction = 0) {
+    if (!certificates.length) return;
+    const cert = certificates[currentIndex];
+    viewerFrame.classList.remove("turn-next", "turn-prev");
+    if (direction) {
+      void viewerFrame.offsetWidth;
+      viewerFrame.classList.add(direction > 0 ? "turn-next" : "turn-prev");
+    }
+    viewerFrame.src = cert.previewUrl || `https://drive.google.com/file/d/${encodeURIComponent(cert.id)}/preview`;
+    viewerCaption.textContent = cert.name;
+    viewerPosition.textContent = `DOCUMENT ${String(currentIndex+1).padStart(2,"0")} / ${String(certificates.length).padStart(2,"0")}`;
+    openOriginal.href = cert.webViewUrl || `https://drive.google.com/file/d/${encodeURIComponent(cert.id)}/view`;
+    previousButton.disabled = nextButton.disabled = certificates.length < 2;
+  }
+
+  function openViewer(index) {
+    if (!certificates.length) return;
+    lastFocusedElement = document.activeElement;
+    currentIndex = index;
+    updateViewer();
+    viewer.classList.add("is-open");
+    viewer.setAttribute("aria-hidden", "false");
+    document.body.classList.add("viewer-active");
+    closeButton.focus();
+  }
+
+  function closeViewer() {
+    viewer.classList.remove("is-open");
+    viewer.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("viewer-active");
+    viewerFrame.src = "about:blank";
+    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") lastFocusedElement.focus();
+  }
+
+  function moveCertificate(direction) {
+    if (!certificates.length) return;
+    currentIndex = (currentIndex + direction + certificates.length) % certificates.length;
+    updateViewer(direction);
+  }
+
+  previousButton.addEventListener("click", () => moveCertificate(-1));
+  nextButton.addEventListener("click", () => moveCertificate(1));
+  closeButton.addEventListener("click", closeViewer);
+  viewer.addEventListener("click", event => { if (event.target === viewer) closeViewer(); });
+  document.addEventListener("keydown", event => {
+    if (!viewer.classList.contains("is-open")) return;
+    if (event.key === "Escape") closeViewer();
+    if (event.key === "ArrowLeft") moveCertificate(-1);
+    if (event.key === "ArrowRight") moveCertificate(1);
+  });
+
+  const menuToggle = document.getElementById("menuToggle");
+  const navLinks = document.getElementById("navLinks");
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = navLinks.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+    navLinks.querySelectorAll("a").forEach(link => link.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+      menuToggle.setAttribute("aria-expanded", "false");
+    }));
+  }
+
+  loadCertificates();
+  window.setInterval(() => loadCertificates(true), REFRESH_INTERVAL_MS);
+</script>
+</body>
+</html>
